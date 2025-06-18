@@ -13,12 +13,12 @@ class SummaryGenerator:
         self.client = client or AsyncOpenAI(api_key=settings.OPENAI_API_KEY)
 
     def _get_language_prompt(self, article_title: str, article_url: str) -> list[dict]:
-        if settings.LANG == "ru":
+        if settings.LANGUAGE == "ru":
             system_msg = "Ты — помощник, кратко пересказывающий статьи Википедии на русском языке."
-            user_msg = f"Сделай краткое содержание статьи Википедии с названием «{article_title}» по ссылке: {article_url}"
+            user_msg = f"Напиши краткое содержание статьи Википедии на русском с названием «{article_title}» по ссылке: {article_url}"
         else:
             system_msg = "You are an assistant that summarizes Wikipedia articles in English."
-            user_msg = f"Write a short summary of the Wikipedia article titled \"{article_title}\" at {article_url}"
+            user_msg = f"Write a short summary of the Wikipedia in English article titled \"{article_title}\" at {article_url}"
 
         return [
             {"role": "system", "content": system_msg},

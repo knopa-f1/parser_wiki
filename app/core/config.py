@@ -11,8 +11,9 @@ class Settings(BaseSettings):
 
     MODE: str
 
-    LANG:str
+    LANGUAGE:str
     MAX_DEPTH:int
+    MAX_LINKS_PER_LEVEL:int
 
     OPENAI_API_KEY: str
 
@@ -22,7 +23,7 @@ class Settings(BaseSettings):
 
     @property
     def WIKI_BASE_URL(self):
-        return f"https://{self.LANG}.wikipedia.org"
+        return f"https://{self.LANGUAGE}.wikipedia.org"
 
     model_config = ConfigDict(env_file=".env")
 

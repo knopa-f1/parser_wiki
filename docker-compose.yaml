@@ -10,7 +10,7 @@ services:
     expose:
       - 5432
     env_file:
-      - .env.docker
+      - .env
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
@@ -20,7 +20,7 @@ services:
     build:
       context: .
     env_file:
-      - .env.docker
+      - .env
     container_name: parser_wiki
     restart: always
     ports:

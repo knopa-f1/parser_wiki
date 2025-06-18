@@ -13,7 +13,7 @@ class WikiParseWorkflow:
     def __init__(self, url: str, uow_factory: UnitOfWorkFactory):
         self.url = url
         self.max_depth = settings.MAX_DEPTH
-        self.max_links_per_level = 5
+        self.max_links_per_level = settings.MAX_LINKS_PER_LEVEL
         self.semaphore = asyncio.Semaphore(10)
         self.visited = set()
         self.uow_factory = uow_factory
