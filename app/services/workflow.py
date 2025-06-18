@@ -1,82 +1,86 @@
 import asyncio
 import aiohttp
+import logging
 
 from app.core.config import settings
-from app.services.wiki_parser import fetch_html, extract_links, extract_title_and_content
-from app.services.summary_generator import generate_summary_for_article_id
-from app.utils.unit_of_work import UnitOfWork
+from app.services.wiki_parser import WikiParser
+from app.services.summary import SummaryGenerator
+from app.utils.unit_of_work import UnitOfWorkFactory
 
-max_depth = settings.MAX_DEPTH
+logger = logging.getLogger(__name__)
 
-async def run_parse_workflow(url: str, uow: UnitOfWork):
-    async with aiohttp.ClientSession() as http_session:
-        html = await fetch_html(url, http_session)
-        title, content = extract_title_and_content(html)
+class WikiParseWorkflow:
+    def __init__(self, url: str, uow_factory: UnitOfWorkFactory):
+        self.url = url
+        self.max_depth = settings.MAX_DEPTH
+        self.max_links_per_level = 5
+        self.semaphore = asyncio.Semaphore(10)
+        self.visited = set()
+        self.uow_factory = uow_factory
+        self.parser = WikiParser()
+        self.summary_generator = SummaryGenerator()
+        self._summary_task: asyncio.Task | None = None
 
-        async with uow:
-            root_article = await uow.articles.get_or_create(
-                url=url,
-                title=title,
-                content=content,
-                parent_id=None
-            )
+    async def run(self):
+        logger.info(f"Starting workflow for {self.url}")
+        async with aiohttp.ClientSession() as http_session:
+            await self._process_article(self.url, None, 0, http_session)
+            if self._summary_task:
+                await self._summary_task
+        logger.info(f"Finished workflow for {self.url}")
 
-        await asyncio.gather(
-            _parse_recursive_links(
-                html, root_article.id, 1, http_session, visited={url}
-            ),
-            generate_summary_for_article_id(root_article.id, uow)
-        )
+    async def _generate_summary(self, article_id: int):
+        logger.info(f"Generating summary for article ID {article_id}")
+        async with self.uow_factory() as uow:
+            await self.summary_generator.generate_for_article_id(article_id, uow)
+        logger.info(f"Generated summary for article ID {article_id}")
 
+    async def _process_article(
+        self,
+        url: str,
+        parent_id: int | None,
+        depth: int,
+        http_session: aiohttp.ClientSession,
+    ):
+        if depth > self.max_depth or url in self.visited:
+            return
 
-async def _parse_recursive_links(
-    html: str,
-    parent_id: int,
-    current_depth: int,
-    http_session: aiohttp.ClientSession,
-    visited: set[str]
-):
-    if current_depth > max_depth:
-        return
+        self.visited.add(url)
 
-    links = extract_links(html)
-    tasks = []
+        async with self.semaphore:
+            try:
+                html = await self.parser.fetch_html(url, http_session)
+                title, content = self.parser.extract_title_and_content(html)
+                logger.info(f"Fetched article: depth={depth}, url={url}")
+            except Exception as e:
+                logger.warning(f"Failed to fetch {url}: {e}")
+                return
 
-    for link in links:
-        if link in visited:
-            continue
-        visited.add(link)
-        tasks.append(
-            _parse_recursive(link, parent_id, current_depth, http_session, visited)
-        )
+            async with self.uow_factory() as uow:
+                article = await uow.articles.get_or_create(
+                    url=url,
+                    title=title,
+                    content=content,
+                    parent_id=parent_id
+                )
+                logger.info(f"Saved article: depth={depth}, url={url}")
 
-    await asyncio.gather(*tasks)
+            if depth == 0:
+                self._summary_task = asyncio.create_task(
+                    self._generate_summary(article.id)
+                )
 
+        links = self.parser.extract_links(html)
+        logger.debug(f"Found {len(links)} links at depth {depth}")
 
-async def _parse_recursive(
-    url: str,
-    parent_id: int,
-    current_depth: int,
-    http_session: aiohttp.ClientSession,
-    visited: set[str],
-):
-    if current_depth > max_depth:
-        return
+        tasks = []
+        count = 0
+        for link in links:
+            if link in self.visited:
+                continue
+            tasks.append(self._process_article(link, article.id, depth + 1, http_session))
+            count += 1
+            if count >= self.max_links_per_level:
+                break
 
-    try:
-        html = await fetch_html(url, http_session)
-        title, content = extract_title_and_content(html)
-    except Exception:
-        return
-
-    async with UnitOfWork() as uow:
-        saved_article = await uow.articles.get_or_create(
-                        url=url,
-                        title=title,
-                        content=content,
-                        parent_id=parent_id
-        )
-
-    await _parse_recursive_links(
-        html, saved_article.id, current_depth + 1, http_session, visited
-    )
+        await asyncio.gather(*tasks, return_exceptions=True)

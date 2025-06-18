@@ -1,6 +1,6 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
-from app.models.summary import Summary
+from app.db.summary import Summary
 from app.repositories.base import BaseRepository
 
 

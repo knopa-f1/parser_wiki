@@ -1,4 +1,4 @@
-from app.core.database import async_session_maker
+from app.db.database import async_session_maker
 
 from app.repositories.article import ArticleRepository
 from app.repositories.summary import SummaryRepository
@@ -26,3 +26,10 @@ class UnitOfWork:
 
     async def rollback(self):
         await self.session.rollback()
+
+class UnitOfWorkFactory:
+    def __init__(self, session_factory=async_session_maker):
+        self.session_factory = session_factory
+
+    def __call__(self) -> UnitOfWork:
+        return UnitOfWork(session_factory=self.session_factory)

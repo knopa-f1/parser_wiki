@@ -1,19 +1,21 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
-from app.models.article import Article
+
+from app.api.schemas.article import ArticleRead
+from app.db.article import Article
 from app.repositories.base import BaseRepository
 
 
 class ArticleRepository(BaseRepository):
     model = Article
 
-    async def get_by_url(self, url: str) -> Article | None:
+    async def get_by_url(self, url: str) -> ArticleRead | None:
         stmt = select(self.model).where(self.model.url == url)
         result = await self.session.execute(stmt)
         obj = result.scalars().first()
         return obj.to_pydantic() if obj else None
 
-    async def get_by_id(self, id_: int) -> Article | None:
+    async def get_by_id(self, id_: int) -> ArticleRead | None:
         stmt = select(Article).where(Article.id == id_)
         result = await self.session.execute(stmt)
         obj = result.scalars().first()
@@ -21,7 +23,7 @@ class ArticleRepository(BaseRepository):
 
     async def get_or_create(
             self, url: str, title: str, content: str, parent_id: int | None = None
-    ) -> Article:
+    ) -> ArticleRead:
         existing = await self.get_by_url(url)
         if existing:
             return existing

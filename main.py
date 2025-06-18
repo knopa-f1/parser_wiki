@@ -3,6 +3,13 @@ from fastapi import FastAPI
 
 from app.api.endpoints import endpoints
 
+import logging
+
+logging.basicConfig(
+    level=logging.DEBUG,
+    format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
+)
+
 app = FastAPI()
 
 app.include_router(endpoints.router)

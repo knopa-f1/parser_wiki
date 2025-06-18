@@ -12,8 +12,8 @@ from alembic import context
 sys.path.append(os.path.join(sys.path[0], 'app'))
 
 from app.core.config import settings  # added
-from app.models.article import Base, Article  # added
-from app.models.summary import Summary # added
+from app.db.article import Base, Article  # added
+from app.db.summary import Summary # added
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
