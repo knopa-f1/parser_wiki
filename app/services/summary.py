@@ -1,5 +1,6 @@
 import logging
 
+import openai
 from openai import AsyncOpenAI
 
 from app.core.config import settings
@@ -40,12 +41,25 @@ class SummaryGenerator: # pylint: disable=too-few-public-methods
 
             messages = self._get_language_prompt(article.title or "", article.url)
 
-        response = await self.client.chat.completions.create(
-            model="gpt-4o",
-            messages=messages,
-            temperature=0.5,
-            max_tokens=500,
-        )
+        try:
+            response = await self.client.chat.completions.create(
+                model="gpt-4o",
+                messages=messages,
+                temperature=0.5,
+                max_tokens=500,
+            )
+        except openai.APIConnectionError:
+            logger.error("Failed to connect to OpenAI API")
+            return None
+        except openai.RateLimitError:
+            logger.warning("Rate limit exceeded")
+            return None
+        except openai.APIStatusError as e:
+            logger.error(f"OpenAI API returned status {e.status_code}: {e.message}")
+            return None
+        except Exception as e:
+            logger.exception("Unexpected error from OpenAI")
+            return None
 
         summary_text = response.choices[0].message.content.strip()
 

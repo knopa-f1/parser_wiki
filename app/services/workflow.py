@@ -23,6 +23,7 @@ class WikiParseWorkflow:
         self.summary_generator = SummaryGenerator()
         self._summary_task: asyncio.Task | None = None
 
+
     async def run(self):
         logger.info("Starting workflow for %s", self.url)
         async with aiohttp.ClientSession() as http_session:
@@ -85,4 +86,7 @@ class WikiParseWorkflow:
             if count >= self.max_links_per_level:
                 break
 
-        await asyncio.gather(*tasks, return_exceptions=True)
+        results = await asyncio.gather(*tasks, return_exceptions=True)
+        for res in results:
+            if isinstance(res, Exception):
+                logger.error("Error in task _process_article: %s", str(res))

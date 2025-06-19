@@ -1,3 +1,4 @@
+import logging
 from typing import List
 from urllib.parse import unquote
 
@@ -42,15 +43,26 @@ EXCLUDED_PREFIXES = {
     '/wiki/Special:RecentChanges'
 }
 
+logger = logging.getLogger(__name__)
+
 
 class WikiParser:
     def __init__(self, base_url: str = settings.WIKI_BASE_URL):
         self.base_url = base_url
+        self.timeout = aiohttp.ClientTimeout(total=10)
 
     async def fetch_html(self, url: str, session: aiohttp.ClientSession) -> str:
-        async with session.get(url) as response:
-            response.raise_for_status()
-            return await response.text()
+        try:
+            async with session.get(url, timeout=self.timeout) as response:
+                response.raise_for_status()
+                return await response.text()
+        except aiohttp.ClientResponseError as e:
+            logger.warning("Bad response from %s: status %s", url, e.status)
+        except aiohttp.ClientConnectionError:
+            logger.warning("Connection error when fetching %s", url)
+        except Exception as e:
+            logger.warning("Unexpected error when fetching %s: %s", url, str(e))
+        return ""
 
     def extract_links(self, html: str) -> List[str]:
         soup = BeautifulSoup(html, "lxml")
