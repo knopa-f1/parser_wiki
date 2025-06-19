@@ -1,13 +1,15 @@
 import asyncio
-import aiohttp
 import logging
 
+import aiohttp
+
 from app.core.config import settings
-from app.services.wiki_parser import WikiParser
 from app.services.summary import SummaryGenerator
+from app.services.wiki_parser import WikiParser
 from app.utils.unit_of_work import UnitOfWorkFactory
 
 logger = logging.getLogger(__name__)
+
 
 class WikiParseWorkflow:
     def __init__(self, url: str, uow_factory: UnitOfWorkFactory):
@@ -36,11 +38,11 @@ class WikiParseWorkflow:
         logger.info(f"Generated summary for article ID {article_id}")
 
     async def _process_article(
-        self,
-        url: str,
-        parent_id: int | None,
-        depth: int,
-        http_session: aiohttp.ClientSession,
+            self,
+            url: str,
+            parent_id: int | None,
+            depth: int,
+            http_session: aiohttp.ClientSession,
     ):
         if depth > self.max_depth or url in self.visited:
             return

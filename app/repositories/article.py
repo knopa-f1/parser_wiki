@@ -1,4 +1,3 @@
-from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 
 from app.api.schemas.article import ArticleRead
@@ -36,5 +35,3 @@ class ArticleRepository(BaseRepository):
 
     async def save(self, article: Article):
         self.session.add(article)
-
-

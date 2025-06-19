@@ -1,8 +1,8 @@
+from typing import List
 from urllib.parse import unquote
 
 import aiohttp
 from bs4 import BeautifulSoup
-from typing import List, Tuple
 
 from app.core.config import settings
 
@@ -59,7 +59,7 @@ class WikiParser:
             href = a["href"]
             decoded_href = unquote(href)
             if (decoded_href.startswith("/wiki/") and not any(decoded_href.startswith(p) for p in EXCLUDED_PREFIXES) and
-                not decoded_href.lower().endswith(('.png', '.jpg', '.jpeg', '.gif'))):
+                    not decoded_href.lower().endswith(('.png', '.jpg', '.jpeg', '.gif'))):
                 full_url = self.base_url + href
                 links.append(full_url)
         return list(set(links))

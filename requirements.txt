@@ -14,3 +14,5 @@ aiohttp
 bs4
 openai~=1.88.0
 lxml~=5.4.0
+pytest
+pytest-asyncio

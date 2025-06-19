@@ -4,6 +4,7 @@ from sqlalchemy.orm import relationship, Mapped, mapped_column
 from app.api.schemas.article import ArticleRead
 from app.db.database import Base
 
+
 class Article(Base):
     __tablename__ = "articles"
 

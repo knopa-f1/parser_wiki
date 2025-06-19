@@ -27,6 +27,7 @@ class UnitOfWork:
     async def rollback(self):
         await self.session.rollback()
 
+
 class UnitOfWorkFactory:
     def __init__(self, session_factory=async_session_maker):
         self.session_factory = session_factory

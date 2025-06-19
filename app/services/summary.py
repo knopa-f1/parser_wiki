@@ -1,12 +1,13 @@
-import openai
 import logging
+
 from openai import AsyncOpenAI
 
 from app.core.config import settings
-from app.utils.unit_of_work import UnitOfWork
 from app.db.summary import Summary
+from app.utils.unit_of_work import UnitOfWork
 
 logger = logging.getLogger(__name__)
+
 
 class SummaryGenerator:
     def __init__(self, client: AsyncOpenAI | None = None):
@@ -53,6 +54,7 @@ class SummaryGenerator:
             uow.session.add(summary)
             await uow.commit()
             return summary
+
 
 class SummaryService:
     def __init__(self, uow: UnitOfWork):

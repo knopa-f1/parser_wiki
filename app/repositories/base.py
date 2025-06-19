@@ -1,7 +1,5 @@
-from typing import Any, Coroutine, Sequence
-
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, insert, Row, RowMapping
 
 
 class BaseRepository:

@@ -11,9 +11,9 @@ class Settings(BaseSettings):
 
     MODE: str
 
-    LANGUAGE:str
-    MAX_DEPTH:int
-    MAX_LINKS_PER_LEVEL:int
+    LANGUAGE: str
+    MAX_DEPTH: int
+    MAX_LINKS_PER_LEVEL: int
 
     OPENAI_API_KEY: str
 
