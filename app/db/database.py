@@ -16,9 +16,5 @@ async_session_maker = async_sessionmaker(
 )
 
 
-class Base(DeclarativeBase):
+class Base(DeclarativeBase): # pylint: disable=too-few-public-methods
     pass
-
-# async def get_async_session():
-#     async with async_session_maker() as session:
-#         yield session

@@ -5,7 +5,7 @@ from app.api.schemas.summary import SummaryRead
 from app.db.database import Base
 
 
-class Summary(Base):
+class Summary(Base): # pylint: disable=too-few-public-methods
     __tablename__ = "summaries"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)

@@ -28,7 +28,7 @@ class UnitOfWork:
         await self.session.rollback()
 
 
-class UnitOfWorkFactory:
+class UnitOfWorkFactory: # pylint: disable=too-few-public-methods
     def __init__(self, session_factory=async_session_maker):
         self.session_factory = session_factory
 

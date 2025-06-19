@@ -5,7 +5,7 @@ from app.api.schemas.article import ArticleRead
 from app.db.database import Base
 
 
-class Article(Base):
+class Article(Base): # pylint: disable=too-few-public-methods
     __tablename__ = "articles"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)

@@ -13,5 +13,5 @@ class SummaryCreate(SummaryBase):
 class SummaryRead(SummaryBase):
     id: int
 
-    class Config:
+    class Config: # pylint: disable=too-few-public-methods
         from_attributes = True

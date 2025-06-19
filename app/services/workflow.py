@@ -24,18 +24,18 @@ class WikiParseWorkflow:
         self._summary_task: asyncio.Task | None = None
 
     async def run(self):
-        logger.info(f"Starting workflow for {self.url}")
+        logger.info("Starting workflow for %s", self.url)
         async with aiohttp.ClientSession() as http_session:
             await self._process_article(self.url, None, 0, http_session)
             if self._summary_task:
                 await self._summary_task
-        logger.info(f"Finished workflow for {self.url}")
+        logger.info("Finished workflow for %s", self.url)
 
     async def _generate_summary(self, article_id: int):
-        logger.info(f"Generating summary for article ID {article_id}")
+        logger.info("Generating summary for article ID %s", article_id)
         async with self.uow_factory() as uow:
             await self.summary_generator.generate_for_article_id(article_id, uow)
-        logger.info(f"Generated summary for article ID {article_id}")
+        logger.info("Generated summary for article ID %s", article_id)
 
     async def _process_article(
             self,
@@ -53,9 +53,9 @@ class WikiParseWorkflow:
             try:
                 html = await self.parser.fetch_html(url, http_session)
                 title, content = self.parser.extract_title_and_content(html)
-                logger.info(f"Fetched article: depth={depth}, url={url}")
+                logger.info("Fetched article: depth=%s, url=%s", depth, url)
             except Exception as e:
-                logger.warning(f"Failed to fetch {url}: {e}")
+                logger.warning("Failed to fetch %s: %s", url, e)
                 return
 
             async with self.uow_factory() as uow:
@@ -65,7 +65,7 @@ class WikiParseWorkflow:
                     content=content,
                     parent_id=parent_id
                 )
-                logger.info(f"Saved article: depth={depth}, url={url}")
+                logger.info("Saved article: depth=%s, url=%s", depth, url)
 
             if depth == 0:
                 self._summary_task = asyncio.create_task(
@@ -73,7 +73,7 @@ class WikiParseWorkflow:
                 )
 
         links = self.parser.extract_links(html)
-        logger.debug(f"Found {len(links)} links at depth {depth}")
+        logger.debug("Found %s links at depth %s", len(links), depth)
 
         tasks = []
         count = 0

@@ -9,7 +9,7 @@ from app.utils.unit_of_work import UnitOfWork
 logger = logging.getLogger(__name__)
 
 
-class SummaryGenerator:
+class SummaryGenerator: # pylint: disable=too-few-public-methods
     def __init__(self, client: AsyncOpenAI | None = None):
         self.client = client or AsyncOpenAI(api_key=settings.OPENAI_API_KEY)
 
@@ -30,12 +30,12 @@ class SummaryGenerator:
         async with uow:
             article = await uow.articles.get_by_id(article_id)
             if not article:
-                logger.warning(f"Article with ID {article_id} not found")
+                logger.warning("Article with ID %s not found", article_id)
                 return None
 
             existing = await uow.summaries.get_by_article_id(article.id)
             if existing:
-                logger.info(f"Summary already exists for article ID {article_id}")
+                logger.info("Summary already exists for article ID %s", article_id)
                 return existing
 
             messages = self._get_language_prompt(article.title or "", article.url)
@@ -56,7 +56,7 @@ class SummaryGenerator:
             return summary
 
 
-class SummaryService:
+class SummaryService: # pylint: disable=too-few-public-methods
     def __init__(self, uow: UnitOfWork):
         self.uow = uow
 

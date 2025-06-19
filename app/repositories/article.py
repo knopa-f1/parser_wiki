@@ -14,8 +14,8 @@ class ArticleRepository(BaseRepository):
         obj = result.scalars().first()
         return obj.to_pydantic() if obj else None
 
-    async def get_by_id(self, id_: int) -> ArticleRead | None:
-        stmt = select(Article).where(Article.id == id_)
+    async def get_by_id(self, obj_id: int) -> ArticleRead | None:
+        stmt = select(Article).where(Article.id == obj_id)
         result = await self.session.execute(stmt)
         obj = result.scalars().first()
         return obj.to_pydantic() if obj else None

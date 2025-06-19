@@ -17,5 +17,5 @@ class ArticleCreate(ArticleBase):
 class ArticleRead(ArticleBase):
     id: int
 
-    class Config:
+    class Config: # pylint: disable=too-few-public-methods
         from_attributes = True
